@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <script src="/socket.io/socket.io.js"></script>
+    </head>
+    <body>
+        <h1>Message</h1>
+        <div id="nbUsers"></div>
+        <label for="pseudo">Pseudo</label><input type="text" id="pseudo">
+        <label for="content">Content</label><input type="text" id="content">
+        <input type="submit" onClick="send()" value="Envoyer">
+        <div id="feedback"></div>
+        <script>
+            const socket = io.connect();
+
+            socket.on('userDisconnected', (data) => {
+                // Display the notification message to the user
+                p = document.createElement("p");
+                p.innerText = (data);
+                document.body.append(p);
+            });
+
+            //call the server to add the msg in the db
+            function send(){
+                x= document.getElementById("pseudo").value;
+                y= document.getElementById("content").value;
+                socket.emit("msg",x,y);
+            }
+
+            //afficher le pseudo + content suite à (io.emit('message', x,y);) dans app.js
+            socket.on("message",(x1,y1)=>{
+                p = document.createElement("p");
+                p.innerText = (x1);
+                document.body.append(p);
+                p = document.createElement("p");
+                p.innerText = (y1);
+                document.body.append(p);
+            })
+
+            socket.on('updateNumUsersOnline', (num_users_online) => {
+                const nbUsers = document.getElementById('nbUsers');
+                nbUsers.innerHTML = `<h3> ${num_users_online} User(s) Online</h3>`;
+            });
+
+
+            //y= prompt("type name")
+            document.getElementById("content").addEventListener('keyup', () => {
+                let name1= document.getElementById("pseudo").value
+                socket.emit('typing', name1);});
+            socket.on("typing", (name) => {
+            feedback.innerHTML = `<p><em>${name}</em> is typing...</p>`;
+            //prompt(name,"is typing...");
+            setTimeout(() => {
+                feedback.innerHTML = "";
+            }, 3000);
+            });
+
+
+
+            {# const typingTimerDelay = 2000; // Adjust the delay time as needed
+            let typingTimer;
+
+            document.getElementById("content").addEventListener('keyup', () => {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                feedback.innerHTML = <p><em>${name}</em> stop...</p>;
+            }, typingTimerDelay);
+            });
+
+            socket.on('stoptyping', () => {
+            feedback.innerHTML = <p><em>${name}</em> stop...</p>;
+            }); #}
+
+
+        </script>
+    </body>
+</html>
